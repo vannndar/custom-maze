@@ -47,4 +47,39 @@ export class Pathfinder {
             return false;
         }
     }
+
+    static async dfs(grid, UI) {
+        const { startNode, endNode } = grid;
+        const stack = [startNode];
+        startNode.isVisited = true;
+        let foundEnd = false;
+
+        while (stack.length > 0 && !foundEnd && UI.isRunning) {
+            const currentNode = stack.pop();
+
+            if (currentNode === endNode) {
+                foundEnd = true;
+                this.reconstructPath(currentNode);
+                UI.showMessage("Path found! (DFS)");
+                return true;
+            }
+
+            const neighbors = grid.getNeighbors(currentNode);
+            for (const neighbor of neighbors) {
+                if (!neighbor.isVisited && !neighbor.isWall) {
+                    neighbor.isVisited = true;
+                    neighbor.previous = currentNode;
+                    neighbor.element.classList.add('node-visited');
+                    stack.push(neighbor);
+                }
+            }
+            // Add a small delay for visualization
+            await new Promise(resolve => setTimeout(resolve, ANIMATION_SPEED));
+        }
+
+        if (!foundEnd) {
+            UI.showMessage(UI.isRunning ? "No path found! (DFS)" : "Search canceled");
+            return false;
+        }
+    }
 }
