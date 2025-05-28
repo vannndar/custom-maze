@@ -53,4 +53,63 @@ export class Grid {
         UI.updateButtonStates();
         UI.showMessage("Grid reset! Click 'Set Start', then 'Set End', then draw walls!");
     }
+
+    resetVisualization() {
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                const node = this.nodes[i][j];
+                if (!node.isStart && !node.isEnd && !node.isWall) {
+                    node.element.classList.remove('node-visited', 'node-path');
+                }
+                node.isVisited = false;
+                node.isPath = false;
+                node.previous = null;
+                node.distance = Infinity;
+            }
+        }
+    }
+
+    getNeighbors(node) {
+        const neighbors = [];
+        const { row, col } = node;
+
+        if (row > 0) neighbors.push(this.nodes[row - 1][col]);
+        if (row < this.rows - 1) neighbors.push(this.nodes[row + 1][col]);
+        if (col > 0) neighbors.push(this.nodes[row][col - 1]);
+        if (col < this.cols - 1) neighbors.push(this.nodes[row][col + 1]);
+
+        return neighbors;
+    }
+
+    setStartNode(row, col) {
+        if (this.startNode) {
+            this.startNode.isStart = false;
+            this.startNode.element.classList.remove('node-start');
+        }
+
+        const node = this.nodes[row][col];
+        node.isStart = true;
+        node.element.classList.add('node-start');
+        this.startNode = node;
+    }
+
+    setEndNode(row, col) {
+        if (this.endNode) {
+            this.endNode.isEnd = false;
+            this.endNode.element.classList.remove('node-end');
+        }
+
+        const node = this.nodes[row][col];
+        node.isEnd = true;
+        node.element.classList.add('node-end');
+        this.endNode = node;
+    }
+
+    toggleWall(row, col) {
+        const node = this.nodes[row][col];
+        if (!node.isStart && !node.isEnd) {
+            node.isWall = !node.isWall;
+            node.element.classList.toggle('node-wall');
+        }
+    }
 }
