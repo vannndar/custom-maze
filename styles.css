@@ -1,0 +1,111 @@
+body {
+    font-family: 'Press Start 2P', monospace;
+    margin: 0;
+    padding: 0;
+    background-color: #111827;
+    color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+}
+
+#grid-container {
+    display: grid;
+    grid-template-columns: repeat(50, 12px);
+    grid-template-rows: repeat(30, 12px);
+    margin-top: 2rem;
+    border: 1px solid #374151;
+    background-color: #1f2937;
+    padding: 2px;
+}
+
+.node {
+    width: 12px;
+    height: 12px;
+    border: 1px solid #4b5563; 
+    background-color: #e5e7eb; 
+}
+
+.node-start {
+    background-color: #16a34a; /* Green for start */
+}
+
+.node-end {
+    background-color: #dc2626; /* Red for end */
+}
+
+.node-wall {
+    background-color: #4b5563; /* Dark gray for walls */
+}
+
+.node-visited {
+    background-color: #6b7280; /* Gray for visited */
+}
+
+.node-path {
+    background-color: #fef08a; /* Yellow for path */
+}
+
+#controls {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.controls-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #3b82f6; 
+    color: #f9fafb;
+    font-family: 'Press Start 2P', monospace;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 5px #fff;
+    transition: background-color 0.3s ease;
+    font-size: 0.6rem;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.controls-button:hover {
+    background-color: #2563eb;
+}
+
+.controls-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+#message-box {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    background-color: #1f2937;
+    color: #f9fafb;
+    text-align: center;
+    font-size: 0.7rem;
+    border: 1px solid #6b7280;
+    width: 80%;
+    max-width: 400px;
+}
+
+select {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    background-color: #3b82f6;
+    color: #f9fafb;
+    border-radius: 5px;
+    padding: 5px;
+    border: none;
+    box-shadow: 0 0 5px #fff;
+    text-shadow: 1px 1px 2px #000;
+}
+
+select:focus {
+    outline: none;
+    box-shadow: 0 0 10px #fff;
+}
