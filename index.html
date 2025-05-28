@@ -6,10 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pathfinding Visualizer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="bg-gray-900 text-gray-50">
+    <div id="grid-container">ini grid</div>
+    <div id="controls" class="mt-4 flex space-x-4">
+        <button id="start-button" class="controls-button">Set Start</button>
+        <button id="end-button" class="controls-button">Set End</button>
+        <button id="wall-button" class="controls-button">Set Wall</button>
+        <select id="algorithm-select">
+        </select>
+        <button id="run-button" class="controls-button">Run Algorithm</button>
+        <button id="reset-button" class="controls-button">Reset</button>
+    </div>
+    <div id="message-box" class="mt-4 p-4 rounded bg-gray-800 text-gray-100 text-center">
+        Click "Set Start", then "Set End", then click "Set Wall" as many times as you like. Then, click "Run Algorithm"!
+    </div>
 
 </body>
 
