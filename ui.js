@@ -32,7 +32,7 @@ export class UI {
     }
 
     static initializeAlgorithmSelect() {
-        const algorithms = ['BFS', 'DFS', 'Dijkstra', 'Bellman-Ford'];
+        const algorithms = ['BFS', 'DFS', 'Dijkstra', 'Bellman-Ford', 'Floyd-Warshall'];
         
         algorithms.forEach(algo => {
             const option = document.createElement('option');
@@ -146,6 +146,9 @@ export class UI {
                     break;
                 case 'bellman-ford':
                     result = await Pathfinder.bellmanFord(this.grid, this);
+                    break;
+                case 'floyd-warshall':
+                    result = await Pathfinder.floydWarshall(this.grid, this);
                     break;
                 default:
                     this.showMessage("Please select a valid algorithm!");

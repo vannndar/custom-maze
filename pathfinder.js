@@ -221,4 +221,189 @@ export class Pathfinder {
             return false;
         }
     }
+
+    static async floydWarshall(grid, UI) {
+        const { startNode, endNode } = grid;
+
+        // For Floyd-Warshall, we'll use a different approach since it's an all-pairs algorithm
+        // We'll focus on just finding the path from start to end
+
+        // Create a distance matrix for nodes
+        const dist = new Map();
+        const next = new Map();
+
+        // Initialize maps with node references as keys
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                const node = grid.nodes[i][j];
+
+                if (node.isWall) continue;
+
+                // Use a string key for the maps based on node coordinates
+                const nodeKey = `${node.row},${node.col}`;
+
+                dist.set(nodeKey, new Map());
+                next.set(nodeKey, new Map());
+
+                // Initialize distances and next pointers
+                for (let r = 0; r < grid.rows; r++) {
+                    for (let c = 0; c < grid.cols; c++) {
+                        const otherNode = grid.nodes[r][c];
+                        if (otherNode.isWall) continue;
+
+                        const otherKey = `${otherNode.row},${otherNode.col}`;
+
+                        if (nodeKey === otherKey) {
+                            dist.get(nodeKey).set(otherKey, 0);
+                        } else {
+                            dist.get(nodeKey).set(otherKey, Infinity);
+                        }
+                        next.get(nodeKey).set(otherKey, null);
+                    }
+                }
+            }
+        }
+
+        // Set up direct neighbors with weight 1
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                const node = grid.nodes[i][j];
+                if (node.isWall) continue;
+
+                const nodeKey = `${node.row},${node.col}`;
+                const neighbors = grid.getNeighbors(node);
+
+                for (const neighbor of neighbors) {
+                    if (!neighbor.isWall) {
+                        const neighborKey = `${neighbor.row},${neighbor.col}`;
+                        dist.get(nodeKey).set(neighborKey, 1);
+                        next.get(nodeKey).set(neighborKey, neighbor);
+                    }
+                }
+            }
+        }
+
+        // Since Floyd-Warshall is O(V^3), we'll visualize progress differently
+        UI.showMessage("Running Floyd-Warshall (this may take longer)...");
+
+        const allKeys = [];
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                if (!grid.nodes[i][j].isWall) {
+                    allKeys.push(`${i},${j}`);
+                }
+            }
+        }
+
+        // To make it more visual and faster, we'll:
+        // 1. Prioritize paths that could lead to the end node
+        // 2. Skip unnecessary calculations for visualizing the start-to-end path
+        // 3. Periodically visualize the current best path
+
+        let iteration = 0;
+        for (const k of allKeys) {
+            if (!UI.isRunning) break;
+
+            for (const i of allKeys) {
+                if (i === k) continue;
+
+                for (const j of allKeys) {
+                    if (j === k || j === i) continue;
+
+                    const directDist = dist.get(i).get(j);
+                    const throughKDist = dist.get(i).get(k) + dist.get(k).get(j);
+
+                    if (throughKDist < directDist) {
+                        dist.get(i).set(j, throughKDist);
+                        next.get(i).set(j, next.get(i).get(k));
+                    }
+                }
+            }
+
+            // Visualize iterations
+            iteration++;
+            if (iteration % 5 === 0 || k === `${endNode.row},${endNode.col}`) {
+                // Visualize the current best path from start to end
+                const startKey = `${startNode.row},${startNode.col}`;
+                const endKey = `${endNode.row},${endNode.col}`;
+
+                // Clear previous visualization first
+                for (let r = 0; r < grid.rows; r++) {
+                    for (let c = 0; c < grid.cols; c++) {
+                        const node = grid.nodes[r][c];
+                        if (!node.isStart && !node.isEnd && !node.isWall) {
+                            node.element.classList.remove('node-visited', 'node-path');
+                            node.isVisited = false;
+                            node.isPath = false;
+                        }
+                    }
+                }
+
+                // Mark nodes on the path if it exists
+                if (dist.get(startKey).get(endKey) < Infinity) {
+                    let pathNode = next.get(startKey).get(endKey);
+                    let currentKey = startKey;
+
+                    while (pathNode && currentKey !== endKey) {
+                        // Mark node as on the path
+                        const nextKey = `${pathNode.row},${pathNode.col}`;
+
+                        if (!pathNode.isStart && !pathNode.isEnd) {
+                            pathNode.isVisited = true;
+                            pathNode.element.classList.add('node-visited');
+                        }
+
+                        currentKey = nextKey;
+                        pathNode = next.get(currentKey).get(endKey);
+                    }
+
+                    UI.showMessage(`Computing all paths... Found path of length ${dist.get(startKey).get(endKey)}`);
+                } else {
+                    UI.showMessage("Computing all paths... No path found yet");
+                }
+
+                await new Promise(resolve => setTimeout(resolve, ANIMATION_SPEED * 2));
+            }
+        }
+
+        // Reconstruct the final path if it exists
+        const startKey = `${startNode.row},${startNode.col}`;
+        const endKey = `${endNode.row},${endNode.col}`;
+
+        if (dist.get(startKey).get(endKey) < Infinity) {
+            // Clear previous visualization
+            for (let r = 0; r < grid.rows; r++) {
+                for (let c = 0; c < grid.cols; c++) {
+                    const node = grid.nodes[r][c];
+                    if (!node.isStart && !node.isEnd && !node.isWall) {
+                        node.element.classList.remove('node-visited', 'node-path');
+                        node.isVisited = false;
+                        node.isPath = false;
+                    }
+                }
+            }
+
+            // Construct the path
+            let pathNode = next.get(startKey).get(endKey);
+            let currentKey = startKey;
+
+            while (pathNode && currentKey !== endKey) {
+                const nextKey = `${pathNode.row},${pathNode.col}`;
+
+                if (!pathNode.isStart && !pathNode.isEnd) {
+                    pathNode.isVisited = true;
+                    pathNode.element.classList.add('node-visited');
+                }
+
+                currentKey = nextKey;
+                pathNode = next.get(currentKey).get(endKey);
+            }
+
+            UI.showMessage(`Path found! (Floyd-Warshall) Length: ${dist.get(startKey).get(endKey)}`);
+            return true;
+        } else {
+            UI.showMessage(UI.isRunning ? "No path found! (Floyd-Warshall)" : "Search canceled");
+            return false;
+        }
+    }
 }
