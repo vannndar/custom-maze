@@ -150,4 +150,75 @@ export class Pathfinder {
             return false;
         }
     }
+
+    static async bellmanFord(grid, UI) {
+        const { startNode, endNode } = grid;
+
+        // Initialize distances
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                grid.nodes[i][j].distance = Infinity;
+                grid.nodes[i][j].previous = null;
+            }
+        }
+
+        startNode.distance = 0;
+
+        // Get all nodes as a flat array
+        const allNodes = [];
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                if (!grid.nodes[i][j].isWall) {
+                    allNodes.push(grid.nodes[i][j]);
+                }
+            }
+        }
+
+        // Bellman-Ford relaxation
+        const numNodes = allNodes.length;
+
+        // Relax all edges |V|-1 times
+        for (let i = 0; i < numNodes - 1 && UI.isRunning; i++) {
+            let relaxed = false;
+
+            for (const node of allNodes) {
+                if (node.distance === Infinity) continue;
+
+                const neighbors = grid.getNeighbors(node);
+                for (const neighbor of neighbors) {
+                    if (!neighbor.isWall) {
+                        const distance = node.distance + 1;
+
+                        if (distance < neighbor.distance) {
+                            neighbor.distance = distance;
+                            neighbor.previous = node;
+                            relaxed = true;
+
+                            // Visualize visited nodes
+                            if (!neighbor.isStart && !neighbor.isEnd && !neighbor.isVisited) {
+                                neighbor.isVisited = true;
+                                neighbor.element.classList.add('node-visited');
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If no relaxation happened, stop early
+            if (!relaxed) break;
+
+            // Add a delay for visualization
+            await new Promise(resolve => setTimeout(resolve, ANIMATION_SPEED));
+        }
+
+        // Check if we found a path to the end node
+        if (endNode.distance !== Infinity) {
+            this.reconstructPath(endNode);
+            UI.showMessage("Path found! (Bellman-Ford)");
+            return true;
+        } else {
+            UI.showMessage(UI.isRunning ? "No path found! (Bellman-Ford)" : "Search canceled");
+            return false;
+        }
+    }
 }
