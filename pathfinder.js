@@ -82,4 +82,72 @@ export class Pathfinder {
             return false;
         }
     }
+
+    static async dijkstra(grid, UI) {
+        const { startNode, endNode } = grid;
+
+        // Initialize distances
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                grid.nodes[i][j].distance = Infinity;
+                grid.nodes[i][j].previous = null;
+            }
+        }
+
+        startNode.distance = 0;
+
+        // "PQueue" (tho it is simple array for now, will be sorted later)
+        const unvisitedNodes = [];
+        for (let i = 0; i < grid.rows; i++) {
+            for (let j = 0; j < grid.cols; j++) {
+                unvisitedNodes.push(grid.nodes[i][j]);
+            }
+        }
+
+        let foundEnd = false;
+
+        while (unvisitedNodes.length > 0 && !foundEnd && UI.isRunning) {
+            // Sort by distance and get closest node
+            unvisitedNodes.sort((a, b) => a.distance - b.distance);
+            const currentNode = unvisitedNodes.shift();
+
+            // Skip walls and already processed nodes
+            if (currentNode.isWall || currentNode.distance === Infinity) continue;
+
+            // Mark as visited for visualization
+            if (!currentNode.isStart && !currentNode.isEnd) {
+                currentNode.isVisited = true;
+                currentNode.element.classList.add('node-visited');
+            }
+
+            // Check if we reached the end
+            if (currentNode === endNode) {
+                foundEnd = true;
+                this.reconstructPath(currentNode);
+                UI.showMessage("Path found! (Dijkstra)");
+                return true;
+            }
+
+            // Process neighbors
+            const neighbors = grid.getNeighbors(currentNode);
+            for (const neighbor of neighbors) {
+                if (!neighbor.isWall) {
+                    // All edges have weight 1 since this is a grid
+                    const distance = currentNode.distance + 1;
+                    if (distance < neighbor.distance) {
+                        neighbor.distance = distance;
+                        neighbor.previous = currentNode;
+                    }
+                }
+            }
+
+            // Add delay for visualization
+            await new Promise(resolve => setTimeout(resolve, ANIMATION_SPEED));
+        }
+
+        if (!foundEnd) {
+            UI.showMessage(UI.isRunning ? "No path found! (Dijkstra)" : "Search canceled");
+            return false;
+        }
+    }
 }
